@@ -1,0 +1,15 @@
+SELECT e.id,e.id,SUM(a.amount),a.date,
+(CASE WHEN (LEAD(CONCAT(YEAR(a.date),'-',MONTH(a.date)),1) OVER 
+ (  
+PARTITION BY a.amount 
+ORDER BY a.date,a.amount)) IS NULL THEN CONCAT(YEAR(a.date),'-',(MONTH(a.date)+1))
+    END) as missed,
+(CASE WHEN (LAG(CONCAT(YEAR(a.date),'-',MONTH(a.date)),1) OVER 
+ (  
+PARTITION BY a.amount  
+ORDER BY a.date,a.amount))IS NOT NULL THEN sum(a.amount)
+    END) as total_receive_last_month
+FROM `payroll_histories` as a
+inner join employees as e on e.id=a.employee_id
+inner join companies as c on c.id = e.company_id
+group by a.amount,a.date
